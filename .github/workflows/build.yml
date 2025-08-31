@@ -7,56 +7,83 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-macos-universal2:
-    name: Build macOS Universal2 Executable
-    runs-on: macos-latest
+  build-macos-intel:
+    name: Build macOS Executable (Intel)
+    runs-on: macos-12 # Intel-based runner
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install Python 3.11 universal2
-        run: |
-          # Download Python universal2 directly to /tmp
-          curl -Lo /tmp/python-3.11.8-universal2.pkg https://www.python.org/ftp/python/3.11.8/python-3.11.8-macos11-universal2.pkg
-          # Install it system-wide
-          sudo installer -pkg /tmp/python-3.11.8-universal2.pkg -target /
-          # Verify version and architecture
-          /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 --version
-          /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -c "import platform; print(platform.machine())"
+      - name: Set up Python (Intel)
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
 
-      - name: Create Python virtual environment
+      - name: Install dependencies
         run: |
-          /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -m venv venv
-          source venv/bin/activate
-          python -m pip install --upgrade pip
-          pip install pyinstaller pygame-ce
+          python3 -m pip install --upgrade pip
+          python3 -m pip install pyinstaller pygame-ce
 
-      - name: Build macOS .app bundle (Universal2)
+      - name: Build macOS .app bundle (Intel)
         run: |
-          source venv/bin/activate
-          python -m PyInstaller \
-            --noconfirm \
-            --windowed \
-            --name "ScoreQuest" \
+          python3 -m PyInstaller \
+            --noconfirm --windowed --name "ScoreQuest" \
             --add-data "assets:assets" \
             --add-data "storage:storage" \
-            --target-arch universal2 \
             main.py
 
-      - name: Codesign and zip .app
+      - name: Codesign and zip Intel .app
         run: |
-          source venv/bin/activate
           codesign --deep --force --sign "adhoc" dist/ScoreQuest.app
           xattr -cr dist/ScoreQuest.app
           cd dist
-          zip -r ScoreQuest_mac_universal2.zip ScoreQuest.app
+          zip -r ScoreQuest_mac_Intel.zip ScoreQuest.app
 
-      - name: Upload macOS artifact
+      - name: Upload macOS Intel artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ScoreQuest_mac
-          path: dist/ScoreQuest_mac_universal2.zip
+          name: ScoreQuest_mac_Intel
+          path: dist/ScoreQuest_mac_Intel.zip
+
+  build-macos-silicon:
+    name: Build macOS Executable (Silicon)
+    runs-on: macos-latest # Apple Silicon runner
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python (Silicon)
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install pyinstaller pygame-ce
+
+      - name: Build macOS .app bundle (Silicon)
+        run: |
+          python3 -m PyInstaller \
+            --noconfirm --windowed --name "ScoreQuest" \
+            --add-data "assets:assets" \
+            --add-data "storage:storage" \
+            main.py
+
+      - name: Codesign and zip Silicon .app
+        run: |
+          codesign --deep --force --sign "adhoc" dist/ScoreQuest.app
+          xattr -cr dist/ScoreQuest.app
+          cd dist
+          zip -r ScoreQuest_mac_Silicon.zip ScoreQuest.app
+
+      - name: Upload macOS Silicon artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ScoreQuest_mac_Silicon
+          path: dist/ScoreQuest_mac_Silicon.zip
 
   build-windows:
     name: Build Windows Executable
@@ -69,7 +96,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.13
+          python-version: "3.11"
 
       - name: Install dependencies
         shell: pwsh
