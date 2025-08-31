@@ -17,9 +17,11 @@ jobs:
 
       - name: Install Python universal2
         run: |
-          cd $GITHUB_WORKSPACE
-          curl -LO https://www.python.org/ftp/python/3.11.8/python-3.11.8-macos11-universal2.pkg
-          sudo installer -pkg "$GITHUB_WORKSPACE/python-3.11.8-macos11-universal2.pkg" -target /
+          # Download Python universal2 directly to /tmp
+          curl -Lo /tmp/python-3.11.8-universal2.pkg https://www.python.org/ftp/python/3.11.8/python-3.11.8-macos11-universal2.pkg
+          # Install it system-wide
+          sudo installer -pkg /tmp/python-3.11.8-universal2.pkg -target /
+          # Verify installation
           /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 --version
           /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 -c "import platform; print(platform.machine())"
 
