@@ -15,14 +15,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install dependencies
+      - name: Create Python virtual environment
         run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install pyinstaller pygame-ce
+          python3 -m venv venv
+          source venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install pyinstaller pygame-ce
 
       - name: Build macOS .app bundle (universal2)
         run: |
-          python3 -m PyInstaller \
+          source venv/bin/activate
+          python -m PyInstaller \
             --noconfirm \
             --windowed \
             --name "ScoreQuest" \
@@ -33,6 +36,7 @@ jobs:
 
       - name: Codesign and zip .app
         run: |
+          source venv/bin/activate
           codesign --deep --force --sign "adhoc" dist/ScoreQuest.app
           xattr -cr dist/ScoreQuest.app
           cd dist
