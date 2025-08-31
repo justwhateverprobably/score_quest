@@ -38,6 +38,11 @@ jobs:
           codesign --deep --force --sign - dist/ScoreQuest.app
           xattr -cr dist/ScoreQuest.app
 
+      - name: Zip .app bundle # can't use --onefile on mac like windows, bc it doesn't work same, if you want .app you must zip it
+        run: |
+          cd dist
+          zip -r ScoreQuest_mac.zip ScoreQuest.app
+
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
