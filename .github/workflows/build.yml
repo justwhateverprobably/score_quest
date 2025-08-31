@@ -35,7 +35,7 @@ jobs:
 
       - name: Codesign and zip Intel .app
         run: |
-          codesign --deep --force --sign "adhoc" dist/ScoreQuest.app
+          codesign --deep --force --sign - dist/ScoreQuest.app
           xattr -cr dist/ScoreQuest.app
           cd dist
           zip -r ScoreQuest_mac_Intel.zip ScoreQuest.app
