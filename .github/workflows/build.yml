@@ -74,7 +74,7 @@ jobs:
 
       - name: Codesign and zip Silicon .app
         run: |
-          codesign --deep --force --sign "adhoc" dist/ScoreQuest.app
+          codesign --deep --force --sign - dist/ScoreQuest.app
           xattr -cr dist/ScoreQuest.app
           cd dist
           zip -r ScoreQuest_mac_Silicon.zip ScoreQuest.app
