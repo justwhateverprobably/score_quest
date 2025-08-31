@@ -1,7 +1,10 @@
 name: Build and Download Game
 
 on:
-  workflow_dispatch: # Manual trigger
+  push:
+    branches:
+      - main
+  workflow_dispatch: # still allows manual trigger
 
 jobs:
   build-and-download:
