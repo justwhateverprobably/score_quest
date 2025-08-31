@@ -37,7 +37,7 @@ jobs:
 
       - name: Ad-hoc codesign and remove quarantine
         run: |
-          codesign --deep --force --sign "adhoc" dist/ScoreQuest.app
+          codesign --deep --force --sign - dist/ScoreQuest.app
           xattr -cr dist/ScoreQuest.app
 
       - name: Zip .app bundle
