@@ -47,7 +47,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ScoreQuest_mac
-          path: dist/ScoreQuest.app
+          path: dist/ScoreQuest-mac.zip # use the zipped file here
 
   build-windows:
     name: Build Windows Executable
