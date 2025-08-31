@@ -11,7 +11,8 @@ jobs:
     name: Build Windows Executable
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -19,22 +20,35 @@ jobs:
           python-version: 3.13
 
       - name: Install dependencies
+        shell: pwsh
         run: |
           python -m pip install --upgrade pip
           pip install -r storage/requirements.txt
           pip install pyinstaller pygame
 
-      - name: Build with PyInstaller
+      - name: Build Windows executable
         shell: pwsh
         run: |
-          pyinstaller --onefile --add-data "assets;assets" --add-data "storage;storage" main.py
+          pyinstaller --onefile --windowed --add-data "assets;assets" --add-data "storage;storage" main.py
 
-      - name: Move executable to build folder
+      - name: Windows optional signing
+        shell: pwsh
+        env:
+          CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
         run: |
-          # Create build folder if it doesn't exist
-          if (-not (Test-Path build)) { New-Item -ItemType Directory -Path build }
+          if ($Env:CERT_PASSWORD) {
+              Write-Host "Signing executable..."
+              $password = $Env:CERT_PASSWORD
+              Import-PfxCertificate -FilePath cert.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String $password -AsPlainText -Force)
+              signtool sign /a /tr http://timestamp.digicert.com /td SHA256 /fd SHA256 dist\main.exe
+          } else {
+              Write-Host "No CERT_PASSWORD secret found; skipping signing."
+          }
 
-          # Move the executable
+      - name: Move Windows executable to build folder
+        shell: pwsh
+        run: |
+          if (-not (Test-Path build)) { New-Item -ItemType Directory -Path build }
           move dist\main.exe build\ScoreQuest_win.exe
 
       - name: Upload Windows artifact
@@ -47,7 +61,8 @@ jobs:
     name: Build macOS Executable
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -60,11 +75,16 @@ jobs:
           pip install -r storage/requirements.txt
           pip install pyinstaller pygame
 
-      - name: Build with PyInstaller
+      - name: Build macOS executable
         run: |
-          pyinstaller --onefile --add-data "assets:assets" --add-data "storage:storage" main.py
+          pyinstaller --onefile --windowed --add-data "assets:assets" --add-data "storage:storage" main.py
 
-      - name: Move executable to build folder
+      - name: Ad-hoc codesign macOS executable
+        run: |
+          codesign --deep --force --sign - dist/main
+          xattr -cr dist/main
+
+      - name: Move macOS executable to build folder
         run: |
           mkdir -p build
           mv dist/main build/ScoreQuest_mac
@@ -82,7 +102,8 @@ jobs:
       - build-windows
       - build-macos
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
       - name: Create build folder
         run: mkdir -p build
