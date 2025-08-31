@@ -31,20 +31,6 @@ jobs:
         run: |
           pyinstaller --onefile --windowed --add-data "assets;assets" --add-data "storage;storage" main.py
 
-      - name: Windows optional signing
-        shell: pwsh
-        env:
-          CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
-        run: |
-          if ($Env:CERT_PASSWORD) {
-              Write-Host "Signing executable..."
-              $password = $Env:CERT_PASSWORD
-              Import-PfxCertificate -FilePath cert.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String $password -AsPlainText -Force)
-              signtool sign /a /tr http://timestamp.digicert.com /td SHA256 /fd SHA256 dist\main.exe
-          } else {
-              Write-Host "No CERT_PASSWORD secret found; skipping signing."
-          }
-
       - name: Move Windows executable to build folder
         shell: pwsh
         run: |
