@@ -1,4 +1,4 @@
-name: Build macOS Game
+name: Build Game
 
 on:
   push:
@@ -24,7 +24,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r storage/requirements.txt
-          pip install pyinstaller pygame
+          pip install pyinstaller pygame-ce
 
       - name: Build macOS .app bundle
         run: |
@@ -38,18 +38,63 @@ jobs:
           codesign --deep --force --sign - dist/ScoreQuest.app
           xattr -cr dist/ScoreQuest.app
 
-      - name: Move .app to build folder
-        run: |
-          mkdir -p build
-          if [ -d "dist/ScoreQuest.app" ]; then
-              mv dist/ScoreQuest.app build/ScoreQuest_mac.app
-          else
-              echo "Executable not found; build may have failed."
-              exit 1
-          fi
+      # - name: Move .app to build folder
+      #   run: |
+      #     mkdir -p build
+      #     if [ -d "dist/ScoreQuest.app" ]; then
+      #         mv dist/ScoreQuest.app build/ScoreQuest_mac.app
+      #     else
+      #         echo "Executable not found; build may have failed."
+      #         exit 1
+      #     fi
 
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
           name: ScoreQuest_mac
-          path: build/ScoreQuest_mac.app
+          path: ScoreQuest_mac.app
+
+  build-windows:
+    name: Build Windows Executable
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.13
+
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r storage/requirements.txt
+          pip install pyinstaller pygame-ce
+
+      - name: Build Windows executable
+        shell: pwsh
+        run: |
+          pyinstaller --noconfirm --onefile --windowed --name "ScoreQuest" `
+            --add-data "assets;assets" `
+            --add-data "storage;storage" `
+            main.py
+
+      # - name: Move executable to build folder
+      #   shell: pwsh
+      #   run: |
+      #     if (-not (Test-Path build)) { New-Item -ItemType Directory -Path build }
+      #     if (Test-Path "dist\ScoreQuest.exe") {
+      #         move dist\ScoreQuest.exe build\ScoreQuest.exe
+      #     } else {
+      #         Write-Host "Executable not found; build may have failed."
+      #         exit 1
+      #     }
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ScoreQuest_win
+          path: ScoreQuest_win.exe
