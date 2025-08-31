@@ -4,23 +4,22 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch: # still allows manual trigger
+  workflow_dispatch:
 
 jobs:
-  build-and-download:
-    runs-on: ubuntu-latest # The job itself runs on Linux, we’ll use runners for Windows/macOS builds
+  build:
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [windows-latest, macos-latest]
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.13"
+          python-version: 3.13
 
       - name: Install dependencies
         run: |
@@ -30,7 +29,7 @@ jobs:
 
       - name: Build with PyInstaller
         run: |
-          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
             pyinstaller --onefile --add-data "assets;assets" --add-data "storage;storage" main.py
           else
             pyinstaller --onefile --add-data "assets:assets" --add-data "storage:storage" main.py
@@ -39,27 +38,25 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.os == 'windows-latest' && 'ScoreQuest_win' || 'ScoreQuest_mac' }}
+          name: ${{ runner.os == 'Windows' && 'ScoreQuest_win' || 'ScoreQuest_mac' }}
           path: dist/
 
   download-artifacts:
     runs-on: ubuntu-latest
-    needs: build-and-download
-
+    needs: build
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Create build folder
         run: mkdir -p build
 
-      - name: Download Windows build
+      - name: Download Windows artifact
         uses: actions/download-artifact@v4
         with:
           name: ScoreQuest_win
           path: build
 
-      - name: Download macOS build
+      - name: Download macOS artifact
         uses: actions/download-artifact@v4
         with:
           name: ScoreQuest_mac
