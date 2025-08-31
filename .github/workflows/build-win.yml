@@ -30,8 +30,7 @@ jobs:
       - name: Build Windows executable
         shell: pwsh
         run: |
-          # Build the executable including assets and storage
-          pyinstaller --noconfirm --windowed --name "ScoreQuest" `
+          pyinstaller --noconfirm --onefile --windowed --name "ScoreQuest" `
             --add-data "assets;assets" `
             --add-data "storage;storage" `
             main.py
@@ -40,7 +39,12 @@ jobs:
         shell: pwsh
         run: |
           if (-not (Test-Path build)) { New-Item -ItemType Directory -Path build }
-          move dist\ScoreQuest.exe build\ScoreQuest.exe
+          if (Test-Path "dist\ScoreQuest.exe") {
+              move dist\ScoreQuest.exe build\ScoreQuest.exe
+          } else {
+              Write-Host "Executable not found; build may have failed."
+              exit 1
+          }
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4

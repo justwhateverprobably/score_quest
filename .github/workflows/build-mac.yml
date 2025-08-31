@@ -26,25 +26,30 @@ jobs:
           pip install -r storage/requirements.txt
           pip install pyinstaller pygame
 
-      - name: Build macOS executable
+      - name: Build macOS executable (.app)
         run: |
-          pyinstaller --noconfirm --windowed --name "ScoreQuest" \
+          pyinstaller --noconfirm --onefile --windowed --name "ScoreQuest.app" \
             --add-data "assets:assets" \
             --add-data "storage:storage" \
             main.py
 
       - name: Ad-hoc codesign and remove quarantine
         run: |
-          codesign --deep --force --sign - dist/ScoreQuest
-          xattr -cr dist/ScoreQuest
+          codesign --deep --force --sign - dist/ScoreQuest.app
+          xattr -cr dist/ScoreQuest.app
 
       - name: Move executable to build folder
         run: |
           mkdir -p build
-          mv dist/ScoreQuest build/ScoreQuest_mac
+          if [ -d "dist/ScoreQuest.app" ]; then
+              mv dist/ScoreQuest.app build/ScoreQuest_mac.app
+          else
+              echo "Executable not found; build may have failed."
+              exit 1
+          fi
 
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
           name: ScoreQuest_mac
-          path: build/ScoreQuest_mac
+          path: build/ScoreQuest_mac.app
