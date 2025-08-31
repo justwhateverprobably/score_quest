@@ -18,7 +18,7 @@ jobs:
       - name: Set up Python (Intel)
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10" # stick to <=3.10 for max Intel compatibility
+          python-version: "3.11" # stick to <=3.11 for max Intel compatibility
 
       - name: Install dependencies
         run: |
@@ -35,7 +35,7 @@ jobs:
 
       - name: Ad-hoc codesign and remove quarantine
         run: |
-          codesign --deep --force --sign - dist/ScoreQuest.app
+          codesign --deep --force --sign "adhoc" dist/ScoreQuest.app
           xattr -cr dist/ScoreQuest.app
 
       - name: Zip .app bundle
@@ -60,7 +60,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.13
+          python-version: 3.11
 
       - name: Install dependencies
         run: |
@@ -88,7 +88,7 @@ jobs:
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ScoreQuest_mac
+          name: ScoreQuest_mac_Silicon
           path: dist/ScoreQuest_mac_Silicon.zip # use the zipped file here
 
   build-windows:
@@ -102,7 +102,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.13
+          python-version: 3.11
 
       - name: Install dependencies
         shell: pwsh
