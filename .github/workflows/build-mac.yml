@@ -26,9 +26,9 @@ jobs:
           pip install -r storage/requirements.txt
           pip install pyinstaller pygame
 
-      - name: Build macOS executable (.app)
+      - name: Build macOS .app bundle
         run: |
-          pyinstaller --noconfirm --onefile --windowed --name "ScoreQuest.app" \
+          pyinstaller --noconfirm --windowed --name "ScoreQuest" \
             --add-data "assets:assets" \
             --add-data "storage:storage" \
             main.py
@@ -38,7 +38,7 @@ jobs:
           codesign --deep --force --sign - dist/ScoreQuest.app
           xattr -cr dist/ScoreQuest.app
 
-      - name: Move executable to build folder
+      - name: Move .app to build folder
         run: |
           mkdir -p build
           if [ -d "dist/ScoreQuest.app" ]; then
