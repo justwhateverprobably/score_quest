@@ -38,21 +38,11 @@ jobs:
           codesign --deep --force --sign - dist/ScoreQuest.app
           xattr -cr dist/ScoreQuest.app
 
-      # - name: Move .app to build folder
-      #   run: |
-      #     mkdir -p build
-      #     if [ -d "dist/ScoreQuest.app" ]; then
-      #         mv dist/ScoreQuest.app build/ScoreQuest_mac.app
-      #     else
-      #         echo "Executable not found; build may have failed."
-      #         exit 1
-      #     fi
-
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
           name: ScoreQuest_mac
-          path: ScoreQuest_mac.app
+          path: dist/ScoreQuest.app
 
   build-windows:
     name: Build Windows Executable
@@ -82,19 +72,8 @@ jobs:
             --add-data "storage;storage" `
             main.py
 
-      # - name: Move executable to build folder
-      #   shell: pwsh
-      #   run: |
-      #     if (-not (Test-Path build)) { New-Item -ItemType Directory -Path build }
-      #     if (Test-Path "dist\ScoreQuest.exe") {
-      #         move dist\ScoreQuest.exe build\ScoreQuest.exe
-      #     } else {
-      #         Write-Host "Executable not found; build may have failed."
-      #         exit 1
-      #     }
-
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: ScoreQuest_win
-          path: ScoreQuest_win.exe
+          path: dist/ScoreQuest.exe
