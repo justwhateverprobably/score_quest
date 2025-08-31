@@ -4,6 +4,7 @@ import random
 from enum import Enum
 import json
 import os
+from pathlib import Path
 
 #Initialize pygame
 pygame.init()
@@ -32,7 +33,7 @@ class Game:
     # INITIALIZE
     # ==========
     def __init__(self):
-        self.save_path = 'storage/cache.json'
+        self.save_path = Path(__file__).parent / 'storage/cache.json'
         pygame.mixer.music.play(loops=-1)
         self.elements = CircleElements
         self.center = (WINDOW_WIDTH//2, WINDOW_HEIGHT//2)
