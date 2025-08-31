@@ -8,18 +8,45 @@ from pathlib import Path
 
 #Initialize pygame
 pygame.init()
-pygame.mixer.init()
+try:
+    pygame.mixer.init()
+except pygame.error:
+    print("Warning: Audio disabled (no available device).")
+    pygame.mixer = None
+
+
+# get the absolute path to resources, so it doesn't crash on start
+def resource_path(relative_path: str) -> str:
+    base_path = getattr(sys, "_MEIPASS", Path(__file__).parent.resolve())
+    return str(Path(base_path) / relative_path)
+
+
+def get_save_path():
+    if sys.platform == "darwin":  # macOS
+        base = Path.home() / "Library/Application Support/ScoreQuest"
+    elif sys.platform == "win32":  # Windows
+        base = Path(os.getenv("APPDATA")) / "ScoreQuest"
+    else:  # Linux/other
+        base = Path.home() / ".scorequest"
+
+    base.mkdir(parents=True, exist_ok=True)
+    return base / "cache.json"
+
 
 #Create a display surface, and set caption
 WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 600
 FPS = 60
-pixel_font = pygame.font.Font('assets/pixel_font.ttf', 32)
+pixel_font = pygame.font.Font(resource_path('assets/pixel_font.ttf'), 32)
 clock = pygame.time.Clock()
 display = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption("ScoreQuest")
-pygame.mixer.music.load('assets/music.mp3')
-sfx = pygame.mixer.Sound('assets/click.wav')
+if pygame.mixer:
+    pygame.mixer.music.load(resource_path("assets/music.mp3"))
+    sfx = pygame.mixer.Sound(resource_path("assets/click.wav"))
+else:
+    sfx = None
+
 
 class CircleElements(Enum):
     display = 1
@@ -33,7 +60,7 @@ class Game:
     # INITIALIZE
     # ==========
     def __init__(self):
-        self.save_path = Path(__file__).parent / 'storage/cache.json'
+        self.save_path = get_save_path()
         pygame.mixer.music.play(loops=-1)
         self.elements = CircleElements
         self.center = (WINDOW_WIDTH//2, WINDOW_HEIGHT//2)
@@ -145,7 +172,8 @@ def main():
                     keys = pygame.key.get_pressed()
                     if keys[pygame.K_SPACE] and game.enemy[elements.radius] > game.player[elements.radius]:
                         # sfx
-                        sfx.play()
+                        if sfx:
+                            sfx.play()
                         # calculate score
                         distance = game.enemy[elements.radius] - game.player[elements.radius]
                         epsilon = 0 # avoid division by 0 if player get perfect timing
