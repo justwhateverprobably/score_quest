@@ -13,12 +13,12 @@ pygame.mixer.init()
 WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 600
 FPS = 60
-pixel_font = pygame.font.Font('pixel_font.ttf', 32)
+pixel_font = pygame.font.Font('assets/pixel_font.ttf', 32)
 clock = pygame.time.Clock()
 display = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-pygame.display.set_caption("")
-pygame.mixer.music.load('music.mp3')
-sfx = pygame.mixer.Sound('click.wav')
+pygame.display.set_caption("ScoreQuest")
+pygame.mixer.music.load('assets/music.mp3')
+sfx = pygame.mixer.Sound('assets/click.wav')
 
 class CircleElements(Enum):
     display = 1
@@ -32,7 +32,7 @@ class Game:
     # INITIALIZE
     # ==========
     def __init__(self):
-        self.save_path = 'cache.json'
+        self.save_path = 'storage/cache.json'
         pygame.mixer.music.play(loops=-1)
         self.elements = CircleElements
         self.center = (WINDOW_WIDTH//2, WINDOW_HEIGHT//2)
@@ -111,7 +111,7 @@ class Game:
         # update high score
         if self.score > self.high_score:
             self.high_score = self.score
-            self.save('cache.json')
+            self.save(self.save_path)
 
         # check lose condition
         if self.current_enemy_radius + self.enemy_width < self.player_radius:
