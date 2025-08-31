@@ -31,7 +31,10 @@ jobs:
 
       - name: Move executable to build folder
         run: |
-          mkdir build
+          # Create build folder if it doesn't exist
+          if (-not (Test-Path build)) { New-Item -ItemType Directory -Path build }
+
+          # Move the executable
           move dist\main.exe build\ScoreQuest_win.exe
 
       - name: Upload Windows artifact
