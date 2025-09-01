@@ -118,3 +118,34 @@ jobs:
         with:
           name: ScoreQuest_win
           path: dist/ScoreQuest.exe
+
+  build-linux:
+    name: Build Linux Executable
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller pygame-ce
+
+      - name: Build Linux executable
+        run: |
+          pyinstaller --noconfirm --onefile --windowed --name "ScoreQuest" \
+            --add-data "assets:assets" \
+            --add-data "storage:storage" \
+            main.py
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ScoreQuest_linux
+          path: dist/ScoreQuest
